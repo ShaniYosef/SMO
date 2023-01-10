@@ -2,9 +2,6 @@ import random
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.patches as mpatches
-
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 
@@ -316,22 +313,54 @@ def main():
     predictions = predict(X_test, models)
 
     # Create a multi-class confusion matrix
-    conf_matrix = confusion_matrix(y_test, predictions)
+    confusion_matrix = np.array([[0, 0, 0],
+                                 [0, 0, 0],
+                                 [0, 0, 0]])
+    for i in range(len(y_test)):
+        confusion_matrix[y_test[i]][predictions[i]] += 1
 
-    # Calculate the accuracy
-    accuracy = accuracy_score(y_test, predictions)
+    print("confusion matrix:")
+    print(confusion_matrix)
 
-    print(conf_matrix)
+    # calculate accuracy
+    accuracy = np.sum(y_test == predictions) / len(y_test)
+    print("accuracy")
     print(accuracy)
 
     # Calculate the sensitivity for each class
     sensitivity = []
-    for i in range(conf_matrix.shape[0]):
-        true_positive = conf_matrix[i, i]
-        false_negative = conf_matrix[i, :].sum() - true_positive
+    for i in range(confusion_matrix.shape[0]):
+        true_positive = confusion_matrix[i, i]
+        false_negative = confusion_matrix[i, :].sum() - true_positive
         sensitivity.append(true_positive / (true_positive + false_negative))
 
     print(sensitivity)
+
+    print("confusion table")
+    for i in range(len(iris.target_names)):
+        print("confusion table for ", iris.target_names[i])
+        # initialize counts
+        true_positive = 0
+        true_negative = 0
+        false_positive = 0
+        false_negative = 0
+
+        # fill the counts
+        for j in range(len(y_test)):
+            if y_test[j] == predictions[j]:
+                if y_test[j] == i:
+                    true_positive += 1
+                else:
+                    true_negative += 1
+            else:
+                if y_test[j] == i:
+                    false_negative += 1
+                else:
+                    false_positive += 1
+
+        print(f"{true_positive} TP | {false_positive} FP")
+        print(f"{false_negative} FN | {true_negative} TN")
+
 
 if __name__ == '__main__':
     main()
